@@ -6912,20 +6912,30 @@ Elm.SpaceShip.make = function (_elm) {
       switch (_p4.ctor)
       {case "NoOp": return ship;
          case "Left": return _U.update(ship,{position: ship.position - 1});
-         default: return _U.update(ship,{position: ship.position + 1});}
+         case "Right": return _U.update(ship,{position: ship.position + 1});
+         case "Fire": var _p5 = _p4._0;
+           var newPowerLevel = _p5 && _U.cmp(ship.powerLevel,0) > 0 ? ship.powerLevel - 1 : ship.powerLevel;
+           return _U.update(ship,{isFiring: _p5,powerLevel: newPowerLevel});
+         default: var newPowerLevel = _U.cmp(ship.powerLevel,10) < 0 ? ship.powerLevel + 1 : ship.powerLevel;
+           return _U.update(ship,{powerLevel: newPowerLevel});}
    });
+   var Tick = {ctor: "Tick"};
+   var ticker = A2($Signal.map,$Basics.always(Tick),$Time.every($Time.second));
+   var Fire = function (a) {    return {ctor: "Fire",_0: a};};
+   var fire = A2($Signal.map,Fire,$Keyboard.space);
    var Right = {ctor: "Right"};
    var Left = {ctor: "Left"};
    var NoOp = {ctor: "NoOp"};
    var direction = function () {
-      var toAction = function (n) {    var _p5 = n;switch (_p5) {case -1: return Left;case 1: return Right;default: return NoOp;}};
+      var toAction = function (n) {    var _p6 = n;switch (_p6) {case -1: return Left;case 1: return Right;default: return NoOp;}};
       var delta = $Time.fps(30);
       var x = A2($Signal.map,function (_) {    return _.x;},$Keyboard.arrows);
       var actions = A2($Signal.map,toAction,x);
       return A2($Signal.sampleOn,delta,actions);
    }();
+   var input = $Signal.mergeMany(_U.list([direction,fire,ticker]));
    var initialShip = {position: 0,powerLevel: 10,isFiring: false};
-   var model = A3($Signal.foldp,update,initialShip,direction);
+   var model = A3($Signal.foldp,update,initialShip,input);
    var main = A3($Signal.map2,view,$Window.dimensions,model);
    var Model = F3(function (a,b,c) {    return {position: a,powerLevel: b,isFiring: c};});
    return _elm.SpaceShip.values = {_op: _op
@@ -6934,11 +6944,16 @@ Elm.SpaceShip.make = function (_elm) {
                                   ,NoOp: NoOp
                                   ,Left: Left
                                   ,Right: Right
+                                  ,Fire: Fire
+                                  ,Tick: Tick
                                   ,update: update
                                   ,view: view
                                   ,drawGame: drawGame
                                   ,drawShip: drawShip
                                   ,direction: direction
+                                  ,fire: fire
+                                  ,ticker: ticker
+                                  ,input: input
                                   ,model: model
                                   ,main: main};
 };

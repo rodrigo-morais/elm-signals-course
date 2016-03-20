@@ -32,6 +32,8 @@ type Action =
   NoOp
   | Left
   | Right
+  | Fire Bool
+  | Tick
 
 update : Action -> Model -> Model
 update action ship =
@@ -42,6 +44,23 @@ update action ship =
       { ship | position = ship.position - 1 }
     Right ->
       { ship | position = ship.position + 1 }
+    Fire firing ->
+      let
+        newPowerLevel =
+          if firing && ship.powerLevel > 0 then ship.powerLevel - 1 else ship.powerLevel
+      in
+        { ship |
+            isFiring = firing,
+            powerLevel = newPowerLevel
+        }
+    Tick ->
+      let
+        newPowerLevel =
+          if ship.powerLevel < 10 then ship.powerLevel + 1 else ship.powerLevel
+      in
+        { ship |
+            powerLevel = newPowerLevel
+        }
 
 
 -- VIEW
@@ -97,9 +116,23 @@ direction =
     Signal.sampleOn delta actions
 
 
+fire : Signal Action
+fire =
+  Signal.map Fire Keyboard.space
+
+ticker : Signal Action
+ticker =
+  Signal.map (always Tick) (Time.every Time.second)
+
+
+input : Signal Action
+input =
+  Signal.mergeMany [direction, fire, ticker]
+
+
 model : Signal Model
 model =
-  Signal.foldp update initialShip direction
+  Signal.foldp update initialShip input
 
 
 main : Signal Element
