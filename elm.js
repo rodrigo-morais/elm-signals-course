@@ -6644,19 +6644,10 @@ Elm.Main.make = function (_elm) {
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm),
-   $String = Elm.String.make(_elm);
+   $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var parseInt = function (character) {
-      var _p0 = $String.toInt($String.fromChar(character));
-      if (_p0.ctor === "Ok") {
-            return $Maybe.Just(_p0._0);
-         } else {
-            return $Maybe.Nothing;
-         }
-   };
    var characters = A2($Signal.map,$Char.fromCode,$Keyboard.presses);
-   var integers = A3($Signal.filterMap,parseInt,0,characters);
-   var main = A2($Signal.map,$Graphics$Element.show,integers);
-   return _elm.Main.values = {_op: _op,characters: characters,parseInt: parseInt,integers: integers,main: main};
+   var state = A3($Signal.foldp,F2(function (x,y) {    return A2($List._op["::"],x,y);}),_U.list([]),characters);
+   var main = A2($Signal.map,$Graphics$Element.show,state);
+   return _elm.Main.values = {_op: _op,characters: characters,state: state,main: main};
 };
