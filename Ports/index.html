@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Thumbs</title>
-  <script type="text/javascript" src="elm.js"></script>
+  <script type="text/javascript" src="../elm.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -18,11 +18,17 @@
 </body>
 
 <script type="text/javascript">
+  var thumbsModel = localStorage.getItem('thumbs-model');
+  var startingModel = thumbsModel ? JSON.parse(thumbsModel) : null;
   var elmDiv = document.getElementById('elm-app-lives-here');
-  var elmApp = Elm.embed(Elm.Thumbs, elmDiv, { comments: "" });
+  var elmApp = Elm.embed(Elm.Thumbs, elmDiv, { comments: "", getStoredModel: startingModel });
 
   elmApp.ports.modelChanges.subscribe(function(model) {
     console.log(model);
+  });
+
+  elmApp.ports.setStoredModel.subscribe(function(model) {
+    localStorage.setItem('thumbs-model', JSON.stringify(model));
   });
 
   function sendComment(form) {
